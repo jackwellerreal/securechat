@@ -1,0 +1,100 @@
+@import url(../styles.css);
+
+.main {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 100%;
+    aspect-ratio: 4/5;
+    ;
+    border-left: 1px solid var(--text);
+    border-right: 1px solid var(--text);
+}
+
+header {
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+header h1 {
+    font-size: 20px;
+}
+
+header p {
+    font-size: 15px;
+}
+
+.username {
+    filter: blur(5px);
+    transition: filter 0.5s;
+    cursor: e;
+}
+
+.username:hover {
+    filter: blur(0);
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.message div {
+    max-width: 45%;
+    width: fit-content;
+}
+
+.message-sender {
+    display: flex;
+    margin-bottom: 5px;
+    font-size: 15px;
+    color : rgb(118, 118, 118);
+    font-weight: 600;
+}
+
+.message-content {
+    width: fit-content;
+    padding: 10px 20px;
+    background-color: #e8e8e8;
+    border-radius: 20px 20px 20px 5px;
+    font-size: 20px;
+}
+
+.self-sender {
+    justify-content: flex-end;
+}
+
+.self-sender .message-content {
+    color: white;
+    background-color: rgb(25, 115, 255);
+    margin-left: auto; /* This will push the div to the right */
+    border-radius: 20px 20px 5px 20px;
+}   
+
+.other-sender .message-content {
+    color: var(--text);
+    background-color: #e8e8e8;
+    border-radius: 20px 20px 20px 5px;
+}
+
+.message-form {
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #e1e1e1;
+}
+
+.message-form input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e1e1e1;
+    border-radius: 20px;
+    font-size: 15px;
+    background-color: var(--background);
+}

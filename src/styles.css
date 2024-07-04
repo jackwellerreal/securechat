@@ -1,13 +1,12 @@
 :root {
-    --background: rgb(18, 18, 18);
-    --text: rgb(245, 245, 245);
+    --text: #121212;
+    --background: #ffffff;
 }
 
 * {
     margin: 0;
     border: 0;
     box-sizing: border-box;
-    color-scheme: dark;
 }
 
 body {
@@ -17,11 +16,15 @@ body {
     color: var(--text);
 }
 
-.main {
-    width: 100vw;
+a {
+    text-decoration: underline;
+    color: var(--text);
+}
+
+#root {
+    display: flex;
+    justify-content: center;
     height: 100vh;
-    display: grid;
-    grid-template-columns: 244px 1fr 244px;
 }
 
 .small-screen {
@@ -30,7 +33,7 @@ body {
 
 @media only screen and (max-width: 1080px) {
     .main {
-        display: none;
+        display: none !important;
     }
     .small-screen {
         display: block;
