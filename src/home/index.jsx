@@ -104,11 +104,11 @@ export function Home() {
 
     useEffect(() => {
         dummy.current.scrollIntoView({ behavior: "smooth" });
-      }, [messages]);
+    }, [messages]);
 
     const createMessage = async (e) => {
         e.preventDefault();
-        let message = formValue
+        let message = formValue;
         setFormValue("");
 
         if (message.length > 50) {
@@ -182,14 +182,12 @@ function MessageLayout(props, key) {
                     ? "self-sender"
                     : "other-sender"
             }`}
-            id = {key}
+            id={key}
         >
-            <div>
-                {author !== localStorage.getItem("username") && (
-                    <p className="message-sender">{author}</p>
-                )}
-                <p className="message-content">{content}</p>
-            </div>
+            {author !== localStorage.getItem("username") && (
+                <p className="message-sender">{author}</p>
+            )}
+            <p className="message-content">{content}</p>
         </div>
     );
 }
