@@ -108,20 +108,25 @@ export function Home() {
 
     const createMessage = async (e) => {
         e.preventDefault();
+        let message = formValue
+        setFormValue("");
 
-        if (formValue.length > 50) {
-            formValue = formValue.substring(0, 50);
-        } else if (formValue.length === 0) {
+        if (message.length > 50) {
+            message = message.substring(0, 50);
+        } else if (message.length === 0) {
             return;
         }
 
         await messageRef.add({
             author: localStorage.getItem("username"),
-            content: formValue,
+            content: message,
             createdTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            location: new firebase.firestore.GeoPoint(
+                position.latitude,
+                position.longitude
+            ),
+            id: Math.floor(Math.random() * 1000000),
         });
-
-        setFormValue("");
     };
 
     return (
@@ -177,6 +182,7 @@ function MessageLayout(props, key) {
                     ? "self-sender"
                     : "other-sender"
             }`}
+            id = {key}
         >
             <div>
                 {author !== localStorage.getItem("username") && (
