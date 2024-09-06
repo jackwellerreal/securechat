@@ -132,3 +132,4 @@ dist
 
 # MacOS
 .DS_Store
+build

@@ -6,6 +6,7 @@ import "firebase/compat/firestore";
 import "firebase/compat/auth";
 
 import { useCollectionData } from "react-firebase-hooks/firestore";
+import CryptoJS from "crypto-js";
 
 firebase.initializeApp({
     apiKey: "AIzaSyCLNd34eS1dNXM09_-TMmqwUkL9qQmltts",
@@ -18,69 +19,9 @@ firebase.initializeApp({
 
 const firestore = firebase.firestore();
 
-const randomUsername = () => {
-    const firstWords = [
-        "Cool",
-        "Fast",
-        "Smart",
-        "Clever",
-        "Happy",
-        "Lucky",
-        "Sunny",
-        "Gentle",
-        "Brave",
-        "Crazy",
-    ];
-    const secondWords = [
-        "Dragon",
-        "Tiger",
-        "Bear",
-        "Wolf",
-        "Eagle",
-        "Lion",
-        "Shark",
-        "Snake",
-        "Fox",
-        "Hawk",
-    ];
-    const thirdWords = [
-        "Master",
-        "Warrior",
-        "Ninja",
-        "Wizard",
-        "Joker",
-        "Hero",
-        "Champion",
-        "Legend",
-        "Hunter",
-        "Samurai",
-    ];
-
-    function getRandomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    if (localStorage.getItem("username")) {
-        return localStorage.getItem("username");
-    }
-
-    const firstIndex = getRandomInt(0, firstWords.length - 1);
-    const secondIndex = getRandomInt(0, secondWords.length - 1);
-    const thirdIndex = getRandomInt(0, thirdWords.length - 1);
-
-    const username = `${firstWords[firstIndex]}${secondWords[secondIndex]}${thirdWords[thirdIndex]}`;
-    localStorage.setItem("username", username);
-    return username;
-};
-
 export function Home() {
-    const [position, setPosition] = useState({
-        latitude: null,
-        longitude: null,
-    });
-    const [username, setUsername] = useState(randomUsername());
     const [formValue, setFormValue] = useState("");
-
+    const [keyValue, setKeyValue] = useState("");
     const dummy = useRef();
 
     const messageRef = firestore.collection("messages");
@@ -88,23 +29,32 @@ export function Home() {
     const [messages] = useCollectionData(query, { idField: "id" });
 
     useEffect(() => {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                setPosition({
-                    latitude: position.coords.latitude,
-                    longitude: position.coords.longitude,
-                });
-            });
+        if (localStorage.getItem("key")) {
+            setKeyValue(localStorage.getItem("key"));
+            document.querySelector("input").value = localStorage.getItem("key");
         } else {
-            console.log("Geolocation is not available in your browser.");
-        }
+            setKeyValue("");
+        }   
+    }, []);
 
-        setUsername(randomUsername());
+    useEffect(() => {
+        if (!localStorage.getItem("author")) {
+            localStorage.setItem("author", Math.floor(Math.random() * 1000000));
+        }
     }, []);
 
     useEffect(() => {
         dummy.current.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
+
+    const encryptMessage = (message) => {
+        return CryptoJS.AES.encrypt(message, keyValue).toString();
+    };
+
+    const decryptMessage = (cipherText) => {
+        const bytes = CryptoJS.AES.decrypt(cipherText, keyValue);
+        return bytes.toString(CryptoJS.enc.Utf8);
+    };
 
     const createMessage = async (e) => {
         e.preventDefault();
@@ -117,14 +67,12 @@ export function Home() {
             return;
         }
 
+        const encryptedMessage = encryptMessage(message);
+
         await messageRef.add({
-            author: localStorage.getItem("username"),
-            content: message,
+            author: parseInt(localStorage.getItem("author")),
+            content: encryptedMessage,
             createdTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            location: new firebase.firestore.GeoPoint(
-                position.latitude,
-                position.longitude
-            ),
             id: Math.floor(Math.random() * 1000000),
         });
     };
@@ -132,29 +80,50 @@ export function Home() {
     return (
         <div className="main">
             <header>
-                <h1>Showing messages in a 50 meter radius</h1>
-                <p>
-                    Your current position is:{" "}
-                    <strong>
-                        <a
-                            href={`https://www.google.com/maps?q=${position.latitude},${position.longitude}`}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            {position.latitude}, {position.longitude}
-                        </a>
-                    </strong>
-                </p>
-                <p>
-                    You are known as{" "}
-                    <strong className="username">{username}</strong>
-                </p>
-                <p>If you want to remain anonymous, don't share your name.</p>
+                <h1>Secure Chat</h1>
+                <p>Encryption method: AES-256</p>
+                <div>
+                    <input
+                        type="password"
+                        placeholder="Enter your shared key"
+                        onChange={(e) => {
+                            setKeyValue(e.target.value);
+                            localStorage.setItem("key", e.target.value);
+                        }}
+                    />
+                    <button
+                        onClick={() => {
+                            if (
+                                document.querySelector("input").type === "text"
+                            ) {
+                                document.querySelector("input").type = "password";
+                            } else {
+                                document.querySelector("input").type = "text";
+                            }
+                        }}
+                    >👁️</button>
+                    <button
+                        onClick={() => {
+                            let key = CryptoJS.lib.WordArray.random(
+                                32
+                            ).toString(CryptoJS.enc.Hex);
+                            setKeyValue(key);
+                            localStorage.setItem("key", key);
+                            document.querySelector("input").value = key;
+                            console.log(key);
+                        }}
+                    >
+                        Generate Key
+                    </button>
+                </div>
             </header>
             <div className="content">
                 {messages &&
                     messages.map((msg) => (
-                        <MessageLayout key={msg.id} message={msg} />
+                        <MessageLayout
+                            message={msg}
+                            decryptMessage={decryptMessage}
+                        />
                     ))}
 
                 <div ref={dummy}></div>
@@ -172,22 +141,25 @@ export function Home() {
     );
 }
 
-function MessageLayout(props, key) {
+function MessageLayout(props) {
     let { content, author } = props.message;
+    const { decryptMessage } = props;
+
+    const decryptedContent = decryptMessage(content);
+
+    if (!decryptedContent) {
+        return null;
+    }
 
     return (
         <div
             className={`message ${
-                author === localStorage.getItem("username")
+                author === parseInt(localStorage.getItem("author"))
                     ? "self-sender"
                     : "other-sender"
             }`}
-            id={key}
         >
-            {author !== localStorage.getItem("username") && (
-                <p className="message-sender">{author}</p>
-            )}
-            <p className="message-content">{content}</p>
+            <p className="message-content">{decryptedContent}</p>
         </div>
     );
 }
