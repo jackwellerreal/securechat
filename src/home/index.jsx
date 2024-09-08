@@ -24,24 +24,27 @@ export function Home() {
     const [keyValue, setKeyValue] = useState("");
     const dummy = useRef();
 
+    const lskey = localStorage.getItem("key");
+    const lsauthor = localStorage.getItem("author");
+
     const messageRef = firestore.collection("messages");
-    const query = messageRef.orderBy("createdTimestamp").limit(50);
+    const query = messageRef.orderBy("createdTimestamp");
     const [messages] = useCollectionData(query, { idField: "id" });
 
     useEffect(() => {
-        if (localStorage.getItem("key")) {
-            setKeyValue(localStorage.getItem("key"));
-            document.querySelector("input").value = localStorage.getItem("key");
+        if (lskey) {
+            setKeyValue(lskey);
+            document.querySelector("input").value = lskey;
         } else {
             setKeyValue("");
-        }   
-    }, []);
+        }
+    }, [lskey]);
 
     useEffect(() => {
-        if (!localStorage.getItem("author")) {
+        if (!lsauthor) {
             localStorage.setItem("author", Math.floor(Math.random() * 1000000));
         }
-    }, []);
+    }, [lsauthor]);
 
     useEffect(() => {
         dummy.current.scrollIntoView({ behavior: "smooth" });
@@ -51,7 +54,7 @@ export function Home() {
         return CryptoJS.AES.encrypt(message, keyValue).toString();
     };
 
-    const decryptMessage = (cipherText) => {
+    const decryptMessage = (cipherText, key) => {
         const bytes = CryptoJS.AES.decrypt(cipherText, keyValue);
         return bytes.toString(CryptoJS.enc.Utf8);
     };
@@ -90,18 +93,22 @@ export function Home() {
                             setKeyValue(e.target.value);
                             localStorage.setItem("key", e.target.value);
                         }}
+                        maxLength={64}
                     />
                     <button
                         onClick={() => {
                             if (
                                 document.querySelector("input").type === "text"
                             ) {
-                                document.querySelector("input").type = "password";
+                                document.querySelector("input").type =
+                                    "password";
                             } else {
                                 document.querySelector("input").type = "text";
                             }
                         }}
-                    >👁️</button>
+                    >
+                        👁️
+                    </button>
                     <button
                         onClick={() => {
                             let key = CryptoJS.lib.WordArray.random(
@@ -123,6 +130,8 @@ export function Home() {
                         <MessageLayout
                             message={msg}
                             decryptMessage={decryptMessage}
+                            lsauthor={lsauthor}
+                            key={msg.id}
                         />
                     ))}
 
@@ -143,21 +152,18 @@ export function Home() {
 
 function MessageLayout(props) {
     let { content, author } = props.message;
-    const { decryptMessage } = props;
+    const { decryptMessage, lsauthor, key } = props;
 
     const decryptedContent = decryptMessage(content);
 
-    if (!decryptedContent) {
-        return null;
-    }
+    if (!decryptedContent) return null;
 
     return (
         <div
             className={`message ${
-                author === parseInt(localStorage.getItem("author"))
-                    ? "self-sender"
-                    : "other-sender"
+                author === parseInt(lsauthor) ? "self-sender" : "other-sender"
             }`}
+            id={key}
         >
             <p className="message-content">{decryptedContent}</p>
         </div>

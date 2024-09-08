@@ -5,8 +5,8 @@
     grid-template-rows: auto 1fr auto;
     height: 100%;
     aspect-ratio: 4/5;
-    border-left: 1px solid var(--text);
-    border-right: 1px solid var(--text);
+    border-left: 1px solid #e1e1e1;
+    border-right: 1px solid #e1e1e1;
 }
 
 header {
@@ -78,12 +78,14 @@ header button {
 
 .message-content {
     max-width: 65%;
+    min-width: 7.5%;
     width: fit-content;
     word-break: break-word;
     padding: 10px 15px;
     background-color: #e8e8e8;
     border-radius: 20px 20px 20px 5px;
     font-size: 20px;
+    text-align: center;
 }
 
 .self-sender {
@@ -95,13 +97,13 @@ header button {
     color: white;
     background-color: rgb(25, 115, 255);
     margin-left: auto; /* This will push the div to the right */
-    border-radius: 20px 20px 5px 20px;
+    border-radius: 100px 100px 25px 100px;
 }
 
 .other-sender .message-content {
     color: var(--text);
     background-color: #e8e8e8;
-    border-radius: 20px 20px 20px 5px;
+    border-radius: 100px 100px 100px 25px;
 }
 
 .message-form {
