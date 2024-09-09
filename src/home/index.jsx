@@ -7,14 +7,17 @@ import "firebase/compat/auth";
 
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import CryptoJS from "crypto-js";
+import 'dotenv/config'
+
+
 
 firebase.initializeApp({
-    apiKey: "AIzaSyCLNd34eS1dNXM09_-TMmqwUkL9qQmltts",
-    authDomain: "proxchat-44b31.firebaseapp.com",
-    projectId: "proxchat-44b31",
-    storageBucket: "proxchat-44b31.appspot.com",
-    messagingSenderId: "183492985298",
-    appId: "1:183492985298:web:eaa8d2378c02e15a77c80b",
+    apiKey: process.env.APIKEY,
+    authDomain: process.env.AUTHDOMAIN,
+    projectId: process.env.PROJECTID,
+    storageBucket: process.env.STORAGEBUCKET,
+    messagingSenderId: process.env.MESSAGINGSENDERID,
+    appId: process.env.APPID
 });
 
 const firestore = firebase.firestore();
@@ -54,9 +57,14 @@ export function Home() {
         return CryptoJS.AES.encrypt(message, keyValue).toString();
     };
 
-    const decryptMessage = (cipherText, key) => {
-        const bytes = CryptoJS.AES.decrypt(cipherText, keyValue);
-        return bytes.toString(CryptoJS.enc.Utf8);
+    const decryptMessage = (message) => {
+        try {
+            return CryptoJS.AES.decrypt(message, keyValue).toString(
+                CryptoJS.enc.Utf8
+            );
+        } catch (e) {
+            return null;
+        }
     };
 
     const createMessage = async (e) => {
@@ -117,7 +125,6 @@ export function Home() {
                             setKeyValue(key);
                             localStorage.setItem("key", key);
                             document.querySelector("input").value = key;
-                            console.log(key);
                         }}
                     >
                         Generate Key
@@ -152,7 +159,7 @@ export function Home() {
 
 function MessageLayout(props) {
     let { content, author } = props.message;
-    const { decryptMessage, lsauthor, key } = props;
+    const { decryptMessage, lsauthor } = props;
 
     const decryptedContent = decryptMessage(content);
 
@@ -163,7 +170,6 @@ function MessageLayout(props) {
             className={`message ${
                 author === parseInt(lsauthor) ? "self-sender" : "other-sender"
             }`}
-            id={key}
         >
             <p className="message-content">{decryptedContent}</p>
         </div>

@@ -1,4 +1,19 @@
 {
+    "name": "securechat",
+    "version": "1.0.0",
+    "description": "An AES-256 encrypted chat app",
+    "main": "src/index.jsx",
+    "keywords": [
+        "aes",
+        "aes256",
+        "encrypted",
+        "secure",
+        "chat",
+        "chatapp",
+        "securechat"
+    ],
+    "author": "jackwellerreal",
+    "license": "MIT",
     "dependencies": {
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",

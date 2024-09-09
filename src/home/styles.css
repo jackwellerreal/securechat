@@ -47,15 +47,6 @@ header button {
     cursor: pointer;
 }
 
-.username {
-    filter: blur(5px);
-    transition: filter 0.5s;
-}
-
-.username:hover {
-    filter: blur(0);
-}
-
 .content {
     display: flex;
     flex-direction: column;
@@ -78,7 +69,7 @@ header button {
 
 .message-content {
     max-width: 65%;
-    min-width: 7.5%;
+    min-width: 50px;
     width: fit-content;
     word-break: break-word;
     padding: 10px 15px;
