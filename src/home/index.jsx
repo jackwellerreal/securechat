@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+
 import "./styles.css";
 
 import firebase from "firebase/compat/app";
@@ -7,17 +8,16 @@ import "firebase/compat/auth";
 
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import CryptoJS from "crypto-js";
-import 'dotenv/config'
 
-
+import { firebaseConfig } from "../../config.js";
 
 firebase.initializeApp({
-    apiKey: process.env.APIKEY,
-    authDomain: process.env.AUTHDOMAIN,
-    projectId: process.env.PROJECTID,
-    storageBucket: process.env.STORAGEBUCKET,
-    messagingSenderId: process.env.MESSAGINGSENDERID,
-    appId: process.env.APPID
+    apiKey: firebaseConfig.apiKey,
+    authDomain: firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId,
+    storageBucket: firebaseConfig.storageBucket,
+    messagingSenderId: firebaseConfig.messagingSenderId,
+    appId: firebaseConfig.appId,
 });
 
 const firestore = firebase.firestore();
@@ -34,6 +34,24 @@ export function Home() {
     const query = messageRef.orderBy("createdTimestamp");
     const [messages] = useCollectionData(query, { idField: "id" });
 
+    const generateRandomKey = () => {
+        return CryptoJS.SHA512(CryptoJS.lib.WordArray.random(32)).toString(CryptoJS.enc.Hex);
+    };
+
+    const encryptMessage = (message) => {
+        return CryptoJS.AES.encrypt(message, keyValue).toString();
+    };
+
+    const decryptMessage = (message) => {
+        try {
+            return CryptoJS.AES.decrypt(message, keyValue).toString(
+                CryptoJS.enc.Utf8
+            );
+        } catch {
+            return null;
+        }
+    };
+
     useEffect(() => {
         if (lskey) {
             setKeyValue(lskey);
@@ -45,27 +63,13 @@ export function Home() {
 
     useEffect(() => {
         if (!lsauthor) {
-            localStorage.setItem("author", Math.floor(Math.random() * 1000000));
+            localStorage.setItem("author", generateRandomKey());
         }
     }, [lsauthor]);
 
     useEffect(() => {
         dummy.current.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
-
-    const encryptMessage = (message) => {
-        return CryptoJS.AES.encrypt(message, keyValue).toString();
-    };
-
-    const decryptMessage = (message) => {
-        try {
-            return CryptoJS.AES.decrypt(message, keyValue).toString(
-                CryptoJS.enc.Utf8
-            );
-        } catch (e) {
-            return null;
-        }
-    };
 
     const createMessage = async (e) => {
         e.preventDefault();
@@ -81,18 +85,32 @@ export function Home() {
         const encryptedMessage = encryptMessage(message);
 
         await messageRef.add({
-            author: parseInt(localStorage.getItem("author")),
+            author: localStorage.getItem("author"),
             content: encryptedMessage,
             createdTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            id: Math.floor(Math.random() * 1000000),
+            id: generateRandomKey(),
         });
     };
 
     return (
         <div className="main">
             <header>
-                <h1>Secure Chat</h1>
-                <p>Encryption method: AES-256</p>
+                <div>
+                    <div>
+                        <h1>Secure Chat</h1>
+                        <p>Encryption method: AES-256</p>
+                    </div>
+                    <button
+                        className="forget"
+                        onClick={() => {
+                            localStorage.removeItem("author");
+                            localStorage.removeItem("key");
+                            window.location.reload();
+                        }}
+                    >
+                        Reset Identity
+                    </button>
+                </div>
                 <div>
                     <input
                         type="password"
@@ -119,9 +137,7 @@ export function Home() {
                     </button>
                     <button
                         onClick={() => {
-                            let key = CryptoJS.lib.WordArray.random(
-                                32
-                            ).toString(CryptoJS.enc.Hex);
+                            const key = generateRandomKey();
                             setKeyValue(key);
                             localStorage.setItem("key", key);
                             document.querySelector("input").value = key;
@@ -168,7 +184,7 @@ function MessageLayout(props) {
     return (
         <div
             className={`message ${
-                author === parseInt(lsauthor) ? "self-sender" : "other-sender"
+                author === lsauthor ? "self-sender" : "other-sender"
             }`}
         >
             <p className="message-content">{decryptedContent}</p>

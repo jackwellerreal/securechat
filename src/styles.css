@@ -1,6 +1,13 @@
 :root {
     --text: #121212;
-    --background: #ffffff;
+
+    --background: hsl(0, 0%, 100%);
+    --background-secondary: hsl(0, 0%, 90%);
+    --background-third: hsl(0, 0%, 85%);
+
+    --background-input: hsl(0, 0%, 95%);
+
+    --border: hsl(0, 0%, 80%);
 }
 
 * {
@@ -10,8 +17,9 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        Helvetica, Arial, sans-serif;
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+        sans-serif;
     background: var(--background);
     color: var(--text);
 }
